@@ -13,26 +13,13 @@ public:
     double const STEP_DX = 0.001;
     double const STEP_DY = 1.000;
 
-    Task(std::string name, int offset, QLinearGradient gradient);
+    Task(std::string name, double x_offset, int y_offset);
 
     // Stepper
     void step (double dx);
 
-    // Setter: offset
-    void setOffset (double offset);
-
     // Setter: active
     void setActive (bool active);
-
-    // Getter: offset
-    double offset () {
-        return d_offset;
-    }
-
-    // Getter: gradient
-    QLinearGradient gradient () {
-        return d_gradient;
-    }
 
     // Getter: xs
     QVector<double> xs () {
@@ -54,11 +41,11 @@ private:
     // The task name
     std::string d_name;
 
-    // Offset of the task from the x-axis (vertical)
-    double d_offset;
+    // The x-axis offset
+    double d_x_offset;
 
-    // The gradient used to color the task
-    QLinearGradient d_gradient;
+    // The y-axis offset
+    double d_y_offset;
 
     // The X and Y task vector (could be abstracted)
     QVector<double> d_xs, d_ys;

@@ -1,9 +1,9 @@
 #include "task.h"
 
-Task::Task(std::string name, int offset, QLinearGradient gradient):
+Task::Task(std::string name, double x_offset, int y_offset):
     d_name(name),
-    d_offset(static_cast<double>(offset)),
-    d_gradient(gradient)
+    d_x_offset(x_offset),
+    d_y_offset(static_cast<double>(y_offset))
 {
    // Initialize vectors
    d_xs = QVector<double>{};
@@ -13,8 +13,8 @@ Task::Task(std::string name, int offset, QLinearGradient gradient):
    d_active = false;
 
    // Push initial points into vectors
-   d_xs.append(0x0);
-   d_ys.append(d_offset);
+   d_xs.append(d_x_offset);
+   d_ys.append(d_y_offset);
 }
 
 
@@ -23,14 +23,6 @@ void Task::step (double dx) {
     d_ys.append(d_ys.last());
 }
 
-void Task::setOffset (double offset) {
-    d_offset = offset;
-
-    // Update the offset of all x-axis points
-    for (int i = 0; i < d_ys.size(); ++i) {
-        d_ys[i] += offset;
-    }
-}
 
 void Task::setActive (bool active) {
 
@@ -44,9 +36,9 @@ void Task::setActive (bool active) {
 
     // Go high if previous state was inactive, else go low
     if (d_active == false) {
-        d_ys.append(d_offset + STEP_DY);
+        d_ys.append(d_y_offset + STEP_DY);
     } else {
-        d_ys.append(d_offset);
+        d_ys.append(d_y_offset);
     }
 
     // Update active state

@@ -20,30 +20,70 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+
     /*\
-     *  Activates the task with the given name on the graph
+     *  @brief Creates a new task in the graph to be tracked
+     *  @param
+     *  - name: The name of the task used in the legend
+     *  - color: The color of the line
+     *  - x_offset: The x-axis offset
+     * @return Identifier (index) of the added task graph
+    \*/
+    int addTask (char const *name, QColor color, double x_offset);
+
+    /*\
+     *  @brief Sets the task with the given ID to be active
+     *  @param
+     *  - id: The identifier of the task returned from addTask
+     *  @return None
     \*/
     void startTask (int id);
 
     /*\
-     * Deactivates the task with the given name on the graph
+     * @brief Sets the task with the given ID to be inactive
+     * @param
+     * - id: The identifier of the task returned from addTask
+     * @return None
     \*/
     void stopTask (int id);
 
     /*\
-     * Iterates the graph by updating w.r.t time
+     * @brief Steps all tasks forward in time by the given x-axis
+     *        unit
+     * @note In order to not go back in time, the absolute value
+     *       is used
+     * @param
+     *  - step_size: The step-size to step all tasks forward with
+     * @return None
     \*/
-    void iterate ();
+    void step (double step_size);
 
 
 
 private slots:
-
+    void horzScrollBarChanged (int value);
+    void vertScrollBarChanged (int value);
+    void xAxisChanged (QCPRange range);
+    void yAxisChanged (QCPRange range);
+    void onClick (QMouseEvent *event);
+    void onMove (QMouseEvent *event);
+    void onRelease (QMouseEvent *event);
 private:
     Ui::MainWindow *ui;
 
+    // Boolean set when a dragging event is occurring
+    bool d_dragging;
+
+    // The point at which the last click happened
+    QPoint d_last_click_point;
+
+    // The current rectangle to draw
+    QCPItemRect *d_selection_rect;
+
     // Vector of tasks to show
     QVector<TaskGraph *> *d_task_graphs;
+
+
 };
 
 #endif // MAINWINDOW_H
