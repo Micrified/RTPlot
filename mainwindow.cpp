@@ -47,13 +47,17 @@ void MainWindow::yAxisChanged (QCPRange range)
 }
 
 
+/*
+ *******************************************************************************
+ *                                Mouse Support                                *
+ *******************************************************************************
+*/
+
+
 void MainWindow::onClick(QMouseEvent *event) {
     QPoint p = event->pos();
     d_last_click_point = p;
     d_dragging = true;
-
-    // Get the top of the y-range
-    int y_range = (2 * d_task_graphs->size());
 
     // Make the selection rectangle true
     d_selection_rect->setVisible(true);
@@ -69,7 +73,6 @@ void MainWindow::onMove(QMouseEvent *event) {
     origin_y = ui->plot->geometry().y();
     width = ui->plot->geometry().width();
     height = ui->plot->geometry().height();
-    //ui->plot->rect().getRect(&origin_x, &origin_y, &width, &height);
 
     // If dragging, actively update the rect
     if (d_dragging) {
@@ -85,13 +88,15 @@ void MainWindow::onRelease (QMouseEvent *event) {
     QPoint p = event->pos();
     if (!(p.x() == d_last_click_point.x() && p.y() == d_last_click_point.y())) {
         qDebug() << "Dragged from " << p.x() << " to " << d_last_click_point.x() << "\n";
-        double xCoord = ui->plot->xAxis->pixelToCoord(p.x());
-        double xCoord2 = ui->plot->xAxis->pixelToCoord(d_last_click_point.x());
-        QCPRange new_range{
-            xCoord,
-                    xCoord2
+        QCPRange new_range {
+            ui->plot->xAxis->pixelToCoord(p.x()),
+            ui->plot->xAxis->pixelToCoord(d_last_click_point.x())
         };
-        //this->xAxisChanged(QCPRange(xCoord, xCoord2));
+
+        // Save the old range
+        d_last_range_p = new QCPRange(ui->plot->xAxis->range());
+
+        // Apply the new range
         ui->plot->xAxis->setRange(new_range);
     }
 
@@ -103,6 +108,16 @@ void MainWindow::onRelease (QMouseEvent *event) {
 
     // Refresh
     ui->plot->replot();
+}
+
+void MainWindow::onWheel (QWheelEvent *event) {
+
+    // If an old ranger exists, restore the value, free, and reset
+    if (d_last_range_p != nullptr) {
+        ui->plot->xAxis->setRange(*d_last_range_p);
+        delete d_last_range_p;
+        d_last_range_p = nullptr;
+    }
 }
 
 
@@ -118,6 +133,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow),
     d_dragging(false),
     d_last_click_point(0,0),
+    d_last_range_p(nullptr),
     d_selection_rect(nullptr)
 {
     ui->setupUi(this);
@@ -140,10 +156,11 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->plot->xAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(xAxisChanged(QCPRange)));
     connect(ui->plot->yAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(yAxisChanged(QCPRange)));
 
-    // Connect mouse position tracker
+    // Connect navigation related events
     connect(ui->plot, SIGNAL(mousePress(QMouseEvent *)), this, SLOT(onClick(QMouseEvent *)));
     connect(ui->plot, SIGNAL(mouseMove(QMouseEvent *)), this, SLOT(onMove(QMouseEvent *)));
     connect(ui->plot, SIGNAL(mouseRelease(QMouseEvent *)), this, SLOT(onRelease(QMouseEvent *)));
+    connect(ui->plot, SIGNAL(mouseWheel(QWheelEvent *)), this, SLOT(onWheel(QWheelEvent *)));
 
     // Apply the legend
     QFont legendFont = font();

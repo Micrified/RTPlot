@@ -68,6 +68,7 @@ private slots:
     void onClick (QMouseEvent *event);
     void onMove (QMouseEvent *event);
     void onRelease (QMouseEvent *event);
+    void onWheel (QWheelEvent *event);
 private:
     Ui::MainWindow *ui;
 
@@ -76,6 +77,9 @@ private:
 
     // The point at which the last click happened
     QPoint d_last_click_point;
+
+    // The x-axis range last used (reset)
+    QCPRange *d_last_range_p;
 
     // The current rectangle to draw
     QCPItemRect *d_selection_rect;
