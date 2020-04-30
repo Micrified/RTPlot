@@ -9,59 +9,103 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    QCPGraph *graph_p;
+    QLinearGradient gradient{QPointF(0, 0), QPointF(0, 1)};
+    gradient.setCoordinateMode(QGradient::ObjectBoundingMode);
 
-    // Set task as initially inactive
-    d_task_active = false;
+    // Create the TaskGraph vector
+    d_task_graphs = new QVector<TaskGraph *>{};
 
-    // Create and configure the graph
-    ui->plot->addGraph();
-    ui->plot->graph(0)->setScatterStyle(QCPScatterStyle::ssDot);
-    ui->plot->graph(0)->setLineStyle(QCPGraph::LineStyle::lsLine);
-    ui->plot->graph(0)->setName("Task");
+    // Apply general plot settings
+    ui->plot->yAxis->setLabel("Tasks");
+    ui->plot->xAxis->setLabel("Time (ms)");
+    ui->plot->yAxis->setRange(0, 4.0);
+    ui->plot->yAxis->setTicks(false);
 
-    // Initialize the X and Y task vectors
-    d_task_x = QVector<double>{};
-    d_task_y = QVector<double>{};
 
-    // Iterate a bit
-    for (int i = 0; i < 20; ++i) {
-        iterate();
-        if ((i % 2) == 0) {
-            startTask("Foo");
-        } else {
-            stopTask("Foo");
-        }
-        cout << "Iterate() ...\n";
-    }
+
+    // Create the first gradient
+    gradient.setColorAt(0.0, 0x3cc63c);
+    gradient.setColorAt(1.0, 0x26f626);
+
+    // Create and configure the first graph
+    graph_p = ui->plot->addGraph();
+    graph_p->setScatterStyle(QCPScatterStyle::ssDot);
+    graph_p->setLineStyle(QCPGraph::LineStyle::lsLine);
+
+    //graph_p->setBrush(gradient);
+    graph_p->setName("A");
+
+    // Add a new taskgraph instance
+    d_task_graphs->append(new TaskGraph{graph_p, new Task{"A", 0, gradient}});
+
+
+
+
+
+    // Create a second gradient
+    gradient.setColorAt(0.0, 0xABCF3c);
+    gradient.setColorAt(1.0, 0xCDD626);
+
+    // Create and configure a second graph
+    graph_p = ui->plot->addGraph();
+    graph_p->setScatterStyle(QCPScatterStyle::ssDot);
+    graph_p->setLineStyle(QCPGraph::LineStyle::lsLine);
+    //graph_p->setBrush(gradient);
+    graph_p->setName("B");
+
+    // Add a new taskgraph instance
+    d_task_graphs->append(new TaskGraph{graph_p, new Task{"B", 2, gradient}});
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+
+    // Delete all tasks in the task graph
+    for (TaskGraph *t : *d_task_graphs) {
+        delete t;
+    }
+
+    // Delete the vector itself
+    delete d_task_graphs;
 }
 
 /*\
  *  Activates the task with the given name on the graph
 \*/
-void MainWindow::startTask (char const * const task_name) {
-   d_task_active = true;
+void MainWindow::startTask (int id) {
+    d_task_graphs->at(id)->task()->setActive(true);
 }
 
 /*\
  * Deactivates the task with the given name on the graph
 \*/
-void MainWindow::stopTask (char const * const task_name) {
-    d_task_active = false;
+void MainWindow::stopTask (int id) {
+    d_task_graphs->at(id)->task()->setActive(false);
 }
 
 /*\
  * Iterates the graph by updating w.r.t time
 \*/
 void MainWindow::iterate () {
-    static double step = 0;
-    d_task_x.append((step += 1));
-    d_task_y.append((d_task_active ? 1.0 : 0.0));
-    ui->plot->graph(0)->setData(d_task_x, d_task_y);
+    double absolute_max_x = 0.0;
+    // Step all tasks
+    for (TaskGraph *g : *d_task_graphs) {
+        Task *task_p = g->task();
+
+        task_p->step(1.0);
+
+        g->graph()->setData(task_p->xs(), task_p->ys());
+
+        // Update x axis
+        double max_x = task_p->xs().last();
+
+        if (max_x > absolute_max_x) {
+            absolute_max_x = max_x;
+        }
+    }
+    ui->plot->xAxis->setRange(0, absolute_max_x);
     ui->plot->replot();
     ui->plot->update();
 }

@@ -1,13 +1,12 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "task.h"
+#include "taskgraph.h"
+
 #include <QMainWindow>
 #include <string>
 
-typedef struct {
-    std::string task_name;
-
-} task_t;
 
 namespace Ui {
 class MainWindow;
@@ -24,12 +23,12 @@ public:
     /*\
      *  Activates the task with the given name on the graph
     \*/
-    void startTask (char const * const task_name);
+    void startTask (int id);
 
     /*\
      * Deactivates the task with the given name on the graph
     \*/
-    void stopTask (char const * const task_name);
+    void stopTask (int id);
 
     /*\
      * Iterates the graph by updating w.r.t time
@@ -43,14 +42,8 @@ private slots:
 private:
     Ui::MainWindow *ui;
 
-    // Points for the graph
-    QVector<double> d_task_x, d_task_y;
-
-    // The current task name
-    std::string d_task_name;
-
-    // Whether the task is active or not
-    bool d_task_active;
+    // Vector of tasks to show
+    QVector<TaskGraph *> *d_task_graphs;
 };
 
 #endif // MAINWINDOW_H
