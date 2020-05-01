@@ -2,7 +2,7 @@
 #define TASK_H
 
 #include <qbrush.h>
-
+#include <QString>
 
 
 class Task
@@ -10,10 +10,10 @@ class Task
 public:
 
     // Constant (minimum step size)
-    double const STEP_DX = 0.001;
+    double const STEP_DX = 0.0001;
     double const STEP_DY = 1.000;
 
-    Task(std::string name, double x_offset, int y_offset);
+    Task(QString name, double x_offset, int y_offset);
 
     // Stepper
     void step (double dx);
@@ -39,7 +39,7 @@ public:
 private:
 
     // The task name
-    std::string d_name;
+    QString d_name;
 
     // The x-axis offset
     double d_x_offset;

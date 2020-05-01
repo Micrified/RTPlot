@@ -1,6 +1,6 @@
 #include "task.h"
 
-Task::Task(std::string name, double x_offset, int y_offset):
+Task::Task(QString name, double x_offset, int y_offset):
     d_name(name),
     d_x_offset(x_offset),
     d_y_offset(static_cast<double>(y_offset))

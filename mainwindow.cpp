@@ -68,10 +68,9 @@ void MainWindow::onMove(QMouseEvent *event) {
     QPoint p = event->pos();
 
     // Get the top of the y-range
-    int origin_x, origin_y, width, height;
+    int origin_x, origin_y, height;
     origin_x = ui->plot->geometry().x();
     origin_y = ui->plot->geometry().y();
-    width = ui->plot->geometry().width();
     height = ui->plot->geometry().height();
 
     // If dragging, actively update the rect
@@ -118,6 +117,7 @@ void MainWindow::onRelease (QMouseEvent *event) {
 }
 
 void MainWindow::onWheel (QWheelEvent *event) {
+    (void)(event);
 
     // If an old ranger exists, restore the value, free, and reset
     if (d_last_range_x_p != nullptr) {
@@ -135,6 +135,37 @@ void MainWindow::onWheel (QWheelEvent *event) {
 
 /*
  *******************************************************************************
+ *                           Menu Method Definitions                           *
+ *******************************************************************************
+*/
+
+
+void MainWindow::createActions()
+{
+    d_open_action = new QAction(tr("&Open"), this);
+    d_open_action->setStatusTip(tr("Create a new file"));
+    connect(d_open_action, &QAction::triggered, this, &MainWindow::openFile);
+
+    QActionGroup *alignmentGroup = new QActionGroup(this);
+    alignmentGroup->addAction(d_open_action);
+}
+
+
+void MainWindow::createMenus()
+{
+    QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
+    fileMenu->addAction(d_open_action);
+}
+
+
+void MainWindow::openFile()
+{
+    qDebug() << "openFile()";
+}
+
+
+/*
+ *******************************************************************************
  *                          Class Method Definitions                           *
  *******************************************************************************
 */
@@ -147,7 +178,8 @@ MainWindow::MainWindow(QWidget *parent) :
     d_last_click_point(0,0),
     d_last_range_x_p(nullptr),
     d_last_range_y_p(nullptr),
-    d_selection_rect(nullptr)
+    d_selection_rect(nullptr),
+    d_open_action(nullptr)
 {
     ui->setupUi(this);
 
@@ -189,7 +221,32 @@ MainWindow::MainWindow(QWidget *parent) :
     d_selection_rect->setVisible(false);
     d_selection_rect->setPen(QPen(QColor{255, 0, 0}));
     d_selection_rect->setBrush(QBrush(QColor{0, 0, 255, 30}));
+
+
+    // Create the menu
+//    QWidget *widget = new QWidget;
+//    setCentralWidget(widget);
+
+//    QWidget *topFiller = new QWidget;
+//    topFiller->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+//    QWidget *bottomFiller = new QWidget;
+//    bottomFiller->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+//    QVBoxLayout *layout = new QVBoxLayout;
+//    layout->setContentsMargins(5, 5, 5, 5);
+//    layout->addWidget(topFiller);
+//    layout->addWidget(bottomFiller);
+//    widget->setLayout(layout);
+
+//    createActions();
+//    createMenus();
+
+//    setWindowTitle(tr("Menus"));
+//    setMinimumSize(160, 160);
 }
+
+
 
 MainWindow::~MainWindow()
 {
@@ -208,7 +265,7 @@ MainWindow::~MainWindow()
     delete d_task_graphs;
 }
 
-int MainWindow::addTask (char const *name, QColor color, double x_offset) {
+int MainWindow::addTask (QString name, QColor color, double x_offset) {
     QPen pen;
     QCPGraph *graph_p;
 

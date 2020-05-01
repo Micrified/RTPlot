@@ -28,13 +28,15 @@ SOURCES += \
         mainwindow.cpp \
     qcustomplot.cpp \
     task.cpp \
-    taskgraph.cpp
+    taskgraph.cpp \
+    parser.cpp
 
 HEADERS += \
         mainwindow.h \
     qcustomplot.h \
     task.h \
-    taskgraph.h
+    taskgraph.h \
+    parser.h
 
 FORMS += \
         mainwindow.ui

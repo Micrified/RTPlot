@@ -29,7 +29,7 @@ public:
      *  - x_offset: The x-axis offset
      * @return Identifier (index) of the added task graph
     \*/
-    int addTask (char const *name, QColor color, double x_offset);
+    int addTask (QString name, QColor color, double x_offset);
 
     /*\
      *  @brief Sets the task with the given ID to be active
@@ -85,8 +85,21 @@ private:
     // The current rectangle to draw
     QCPItemRect *d_selection_rect;
 
+    // The open-file action
+    QAction *d_open_action;
+
     // Vector of tasks to show
     QVector<TaskGraph *> *d_task_graphs;
+
+
+    // Create actions for the menu
+    void createActions();
+
+    // Create the menus
+    void createMenus();
+
+    // File opening handler
+    void openFile();
 
 
 };
