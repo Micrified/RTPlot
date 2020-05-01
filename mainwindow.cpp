@@ -85,8 +85,7 @@ void MainWindow::onMove(QMouseEvent *event) {
 
 void MainWindow::onRelease (QMouseEvent *event) {
     QPoint p = event->pos();
-    if (d_last_range_x_p == nullptr && d_last_range_y_p == nullptr &&
-       !(p.x() == d_last_click_point.x() && p.y() == d_last_click_point.y())) {
+    if (!(p.x() == d_last_click_point.x() && p.y() == d_last_click_point.y())) {
         qDebug() << "Dragged from " << p.x() << " to " << d_last_click_point.x() << "\n";
         QCPRange new_x_range {
             ui->plot->xAxis->pixelToCoord(p.x()),
@@ -97,9 +96,13 @@ void MainWindow::onRelease (QMouseEvent *event) {
             static_cast<double>(d_task_graphs->size() * 2)
         };
 
-        // Save the old range
-        d_last_range_x_p = new QCPRange(ui->plot->xAxis->range());
-        d_last_range_y_p = new QCPRange(ui->plot->yAxis->range());
+        // If no zoom is currently applied, then save the scaling
+        if (d_last_range_x_p == nullptr && d_last_range_y_p == nullptr) {
+
+            // Save the old range
+            d_last_range_x_p = new QCPRange(ui->plot->xAxis->range());
+            d_last_range_y_p = new QCPRange(ui->plot->yAxis->range());
+        }
 
         // Apply the new range
         ui->plot->xAxis->setRange(new_x_range);
@@ -183,13 +186,20 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    // Set the name
+    this->setWindowTitle("RTPlot");
+
     // Create the TaskGraph vector
     d_task_graphs = new QVector<TaskGraph *>{};
 
     // Apply general plot settings
     ui->plot->yAxis->setLabel("Tasks");
     ui->plot->xAxis->setLabel("Time (ms)");
-    ui->plot->yAxis->setTicks(false);
+    //ui->plot->yAxis->setTicks(false);
+
+    // Rotate Y-axis labels
+    ui->plot->yAxis->setAutoTickStep(false);
+    ui->plot->yAxis->setAutoSubTicks(false);
 
     // Apply scroll support settings to the plot
     ui->plot->axisRect()->setupFullAxesBox(true);
@@ -221,31 +231,7 @@ MainWindow::MainWindow(QWidget *parent) :
     d_selection_rect->setVisible(false);
     d_selection_rect->setPen(QPen(QColor{255, 0, 0}));
     d_selection_rect->setBrush(QBrush(QColor{0, 0, 255, 30}));
-
-
-    // Create the menu
-//    QWidget *widget = new QWidget;
-//    setCentralWidget(widget);
-
-//    QWidget *topFiller = new QWidget;
-//    topFiller->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-
-//    QWidget *bottomFiller = new QWidget;
-//    bottomFiller->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-
-//    QVBoxLayout *layout = new QVBoxLayout;
-//    layout->setContentsMargins(5, 5, 5, 5);
-//    layout->addWidget(topFiller);
-//    layout->addWidget(bottomFiller);
-//    widget->setLayout(layout);
-
-//    createActions();
-//    createMenus();
-
-//    setWindowTitle(tr("Menus"));
-//    setMinimumSize(160, 160);
 }
-
 
 
 MainWindow::~MainWindow()
@@ -264,6 +250,7 @@ MainWindow::~MainWindow()
     // Delete the vector itself
     delete d_task_graphs;
 }
+
 
 int MainWindow::addTask (QString name, QColor color, double x_offset) {
     QPen pen;
@@ -294,6 +281,10 @@ int MainWindow::addTask (QString name, QColor color, double x_offset) {
 
     // Update the plot range with the new configuration
     ui->plot->yAxis->setRange(0, y_range);
+
+    ui->plot->yAxis->setRange(0, y_range);
+    ui->plot->yAxis->setTickStep (1.0);
+    ui->plot->yAxis->setSubTickCount(0);
 
     return index;
 }
