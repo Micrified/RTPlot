@@ -290,6 +290,9 @@ Parser::Parser(char const *filename):
     // Call the parser
     this->parse();
 
+    // Close the file
+    fclose(file);
+
 }
 
 Parser::~Parser() {
