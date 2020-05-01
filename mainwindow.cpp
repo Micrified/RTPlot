@@ -86,18 +86,25 @@ void MainWindow::onMove(QMouseEvent *event) {
 
 void MainWindow::onRelease (QMouseEvent *event) {
     QPoint p = event->pos();
-    if (!(p.x() == d_last_click_point.x() && p.y() == d_last_click_point.y())) {
+    if (d_last_range_x_p == nullptr && d_last_range_y_p == nullptr &&
+       !(p.x() == d_last_click_point.x() && p.y() == d_last_click_point.y())) {
         qDebug() << "Dragged from " << p.x() << " to " << d_last_click_point.x() << "\n";
-        QCPRange new_range {
+        QCPRange new_x_range {
             ui->plot->xAxis->pixelToCoord(p.x()),
             ui->plot->xAxis->pixelToCoord(d_last_click_point.x())
         };
+        QCPRange new_y_range {
+            0.0,
+            static_cast<double>(d_task_graphs->size() * 2)
+        };
 
         // Save the old range
-        d_last_range_p = new QCPRange(ui->plot->xAxis->range());
+        d_last_range_x_p = new QCPRange(ui->plot->xAxis->range());
+        d_last_range_y_p = new QCPRange(ui->plot->yAxis->range());
 
         // Apply the new range
-        ui->plot->xAxis->setRange(new_range);
+        ui->plot->xAxis->setRange(new_x_range);
+        ui->plot->yAxis->setRange(new_y_range);
     }
 
     // Hide the selection rectangle
@@ -113,10 +120,15 @@ void MainWindow::onRelease (QMouseEvent *event) {
 void MainWindow::onWheel (QWheelEvent *event) {
 
     // If an old ranger exists, restore the value, free, and reset
-    if (d_last_range_p != nullptr) {
-        ui->plot->xAxis->setRange(*d_last_range_p);
-        delete d_last_range_p;
-        d_last_range_p = nullptr;
+    if (d_last_range_x_p != nullptr) {
+        ui->plot->xAxis->setRange(*d_last_range_x_p);
+        delete d_last_range_x_p;
+        d_last_range_x_p = nullptr;
+    }
+    if (d_last_range_y_p != nullptr) {
+        ui->plot->yAxis->setRange(*d_last_range_y_p);
+        delete d_last_range_y_p;
+        d_last_range_y_p = nullptr;
     }
 }
 
@@ -133,7 +145,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow),
     d_dragging(false),
     d_last_click_point(0,0),
-    d_last_range_p(nullptr),
+    d_last_range_x_p(nullptr),
+    d_last_range_y_p(nullptr),
     d_selection_rect(nullptr)
 {
     ui->setupUi(this);

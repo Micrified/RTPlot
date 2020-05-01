@@ -79,7 +79,8 @@ private:
     QPoint d_last_click_point;
 
     // The x-axis range last used (reset)
-    QCPRange *d_last_range_p;
+    QCPRange *d_last_range_x_p;
+    QCPRange *d_last_range_y_p;
 
     // The current rectangle to draw
     QCPItemRect *d_selection_rect;
